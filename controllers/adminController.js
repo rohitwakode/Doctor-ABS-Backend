@@ -125,6 +125,29 @@ const allDoctors = async (req, res) => {
     }
 }
 
+// API to delete a doctor from admin panel
+const deleteDoctor = async (req, res) => {
+    try {
+        const { doctorId } = req.body
+
+        if (!doctorId) {
+            return res.json({ success: false, message: 'doctorId is required' })
+        }
+
+        const doctor = await doctorModel.findById(doctorId)
+        if (!doctor) {
+            return res.json({ success: false, message: 'Doctor not found' })
+        }
+
+        await doctorModel.findByIdAndDelete(doctorId)
+
+        res.json({ success: true, message: 'Doctor deleted successfully' })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
 // API to get dashboard data for admin panel
 const adminDashboard = async (req, res) => {
     try {
@@ -154,5 +177,6 @@ export {
     appointmentCancel,
     addDoctor,
     allDoctors,
+    deleteDoctor,
     adminDashboard
 }
