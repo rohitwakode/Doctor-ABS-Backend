@@ -16,34 +16,26 @@ connectCloudinary()
 // middlewares
 app.use(express.json())
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : [];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
 // Allow CORS from your frontend domain
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow non-browser tools (Postman, curl) as well as same-origin.
     if (!origin) {
-      // non-browser requests, allow
       return callback(null, true);
     }
 
-    if (allowedOrigins.length === 0) {
-      // no origin list configured, allow all (safe for quick deploy / debugging)
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(new Error("Not allowed by CORS"));
+    return callback(new Error(`CORS policy: origin ${origin} not allowed`));
   },
-  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  optionsSuccessStatus: 204
+  credentials: true
 }));
-
-app.options('*', cors());
 
 // api endpoints
 app.use("/api/user", userRouter)
